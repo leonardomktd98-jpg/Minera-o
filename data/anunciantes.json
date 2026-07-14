@@ -1,16 +1,16 @@
 [
   {
-    "id": "exemplo-1",
-    "name": "Massageador Shiatsu",
-    "tag": "saúde",
-    "notes": "Oferta 2 por R$97, criativo de UGC",
-    "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&view_all_page_id=100064000000000&media_type=all"
+    "id": "loja-do-jorge",
+    "name": "Loja do Jorge",
+    "tag": "pet",
+    "notes": "cortador de unha, oferta 89,90",
+    "url": "COLE_AQUI_O_LINK_DA_BIBLIOTECA"
   },
   {
-    "id": "exemplo-2",
-    "name": "Busca: escova alisadora",
-    "tag": "beleza",
-    "notes": "monitorando o nicho inteiro",
-    "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&q=escova%20alisadora&media_type=all"
+    "id": "outro-anunciante",
+    "name": "Outro Anunciante",
+    "tag": "casa",
+    "notes": "",
+    "url": "COLE_AQUI_O_OUTRO_LINK"
   }
 ]
