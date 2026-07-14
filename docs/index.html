@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Filão — monitor de escala</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ore:#E0913F;--up:#5FD3A3;--down:#F0705F;--flat:#7C8695;
+    --bg:#101419;--bg-2:#161C23;--panel:#1A222B;--panel-2:#202A34;
+    --line:#2A3540;--line-soft:#222C36;--ink:#EDE7DE;--ink-2:#9AA6B2;--ink-3:#65717D;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'Space Grotesk',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    background-image:radial-gradient(900px 500px at 12% -10%,#1D2731 0%,transparent 60%);-webkit-font-smoothing:antialiased}
+  button,input,select{font-family:inherit;color:inherit}button{cursor:pointer}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 20px 90px}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .logo{font-size:30px;font-weight:700;letter-spacing:-.03em}.logo b{color:var(--ore)}
+  .tag{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.12em;text-transform:uppercase}
+  .btn{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:500}
+  .btn:hover{background:var(--panel-2)}
+  .btn.primary{background:var(--ore);border-color:var(--ore);color:#17120A;font-weight:600}
+  .btn:focus-visible{outline:2px solid var(--ore);outline-offset:2px}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:18px 0}
+  .sm{background:var(--bg-2);padding:14px 16px}
+  .sm .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .sm .v{font-family:var(--mono);font-size:22px;font-weight:600;margin-top:6px}
+  .sm .s{font-size:11px;color:var(--ink-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .chips{display:flex;gap:4px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:3px}
+  .chip{border:0;background:transparent;color:var(--ink-2);padding:6px 11px;border-radius:6px;font-size:12px}
+  .chip[aria-pressed="true"]{background:var(--panel-2);color:var(--ink)}
+  .chip i{font-style:normal;font-family:var(--mono);opacity:.5;margin-left:5px;font-size:11px}
+  .spacer{flex:1}
+  select,input.search{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px}
+  input.search{width:190px}
+  .rows{display:flex;flex-direction:column;gap:8px}
+  .row{display:grid;grid-template-columns:minmax(180px,1.35fr) 120px 92px 92px minmax(150px,1fr) 40px;gap:14px;align-items:center;
+    background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;padding:13px 14px}
+  .row:hover{background:var(--panel)}
+  .row.up{border-left-color:var(--up)}.row.down{border-left-color:var(--down)}
+  .row.flat{border-left-color:var(--flat)}.row.dead{border-left-color:#3A4049;opacity:.62}
+  .nm{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{display:flex;gap:6px;margin-top:4px;font-family:var(--mono);font-size:10px;color:var(--ink-3);align-items:center}
+  .pill{border:1px solid var(--line);border-radius:20px;padding:1px 7px;text-transform:uppercase}
+  .pill.st-up{color:var(--up);border-color:#2C4A3E}.pill.st-down{color:var(--down);border-color:#4A2F2C}
+  .pill.st-flat{color:var(--flat)}.pill.st-dead{color:#5C6470}
+  .count{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1}
+  .count small{display:block;font-size:10px;color:var(--ink-3);margin-top:5px;letter-spacing:.08em}
+  .delta{font-family:var(--mono);font-size:15px;font-weight:600}
+  .delta small{display:block;font-size:9.5px;color:var(--ink-3);letter-spacing:.09em;margin-bottom:4px;font-weight:400;text-transform:uppercase}
+  .pos{color:var(--up)}.neg{color:var(--down)}.zer{color:var(--flat)}
+  .pct{font-size:10.5px;color:var(--ink-3);font-weight:400}
+  .strata{height:44px;width:100%;display:block}
+  .go{background:transparent;border:1px solid var(--line);border-radius:7px;width:32px;height:32px;color:var(--ink-2);display:grid;place-items:center}
+  .go:hover{color:var(--ore)}
+  .empty{border:1px dashed var(--line);border-radius:10px;padding:46px 24px;text-align:center;color:var(--ink-2)}
+  .empty h3{color:var(--ink);margin:0 0 6px}
+  .veil{position:fixed;inset:0;background:rgba(8,11,14,.8);display:none;place-items:center;padding:20px;z-index:50}
+  .veil.on{display:grid}
+  .modal{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;width:100%;max-width:840px;max-height:88vh;overflow:auto}
+  .mh{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg-2)}
+  .mh h2{margin:0;font-size:17px}.mh .sub{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:3px;text-transform:uppercase}
+  .mb{padding:20px}.x{background:0;border:0;color:var(--ink-3);font-size:22px}
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .kpi div{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px}
+  .kpi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .kpi .v{font-family:var(--mono);font-size:19px;font-weight:600;margin-top:5px}
+  .hist{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;margin-top:16px}
+  .hist th{text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding:8px 6px;border-bottom:1px solid var(--line);font-weight:500}
+  .hist td{padding:9px 6px;border-bottom:1px solid var(--line-soft)}
+  label.f{display:block;margin-bottom:14px}
+  label.f span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+  .in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:13.5px}
+  textarea.in{font-family:var(--mono);font-size:11.5px;min-height:120px}
+  .hint{font-size:11.5px;color:var(--ink-3);line-height:1.6;margin-top:6px}
+  .foot{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:24px;text-align:center}
+  @media(max-width:860px){
+    .summary{grid-template-columns:1fr 1fr}
+    .row{grid-template-columns:1fr 84px 84px;grid-template-areas:"a b c" "s s s";row-gap:12px}
+    .row>.idc{grid-area:a}.row>.cnt{grid-area:b}.row>.d7{grid-area:c}
+    .row>.d1,.row>.go{display:none}.row>.stw{grid-area:s}
+    .kpi{grid-template-columns:1fr 1fr}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">Fil<b>ã</b>o</div>
+      <div class="tag" id="stamp">carregando…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="bAdd">+ Anunciante</button>
+      <button class="btn primary" id="bReload">Atualizar painel</button>
+    </div>
+  </header>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="toolbar">
+    <div class="chips" id="chips"></div>
+    <div class="spacer"></div>
+    <input class="search" id="search" placeholder="Buscar nome ou nicho">
+    <select id="sort">
+      <option value="mom">Ordenar: momento (7d)</option>
+      <option value="d1">Ordenar: variação do dia</option>
+      <option value="count">Ordenar: total de anúncios</option>
+      <option value="name">Ordenar: nome</option>
+    </select>
+  </div>
+
+  <div class="rows" id="rows"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<div class="veil" id="vDetail"><div class="modal">
+  <div class="mh"><div><h2 id="dName"></h2><div class="sub" id="dSub"></div></div><button class="x" data-close>×</button></div>
+  <div class="mb" id="dBody"></div>
+</div></div>
+
+<div class="veil" id="vAdd"><div class="modal" style="max-width:620px">
+  <div class="mh"><div><h2>Adicionar anunciante</h2><div class="sub">gera o bloco para colar em data/anunciantes.json</div></div><button class="x" data-close>×</button></div>
+  <div class="mb">
+    <label class="f"><span>Link da biblioteca</span><input class="in" id="aUrl" placeholder="https://www.facebook.com/ads/library/?...">
+      <div class="hint">Filtre por país e por “Anúncios ativos” antes de copiar o link. O robô vai abrir exatamente essa página.</div></label>
+    <label class="f"><span>Nome</span><input class="in" id="aName" placeholder="Ex.: Loja do Massageador"></label>
+    <label class="f"><span>Nicho</span><input class="in" id="aTag" placeholder="Ex.: saúde"></label>
+    <label class="f"><span>Cole este bloco em data/anunciantes.json</span><textarea class="in" id="aOut" readonly></textarea>
+      <div class="hint">Abra o arquivo no GitHub, clique no lápis, cole antes do <code>]</code> final (com vírgula na entrada anterior) e salve. Na próxima coleta ele já entra.</div></label>
+    <div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn" id="aCopy">Copiar bloco</button></div>
+  </div>
+</div></div>
+
+<script>
+let DB={anunciantes:{}},FILTER='all',SORT='mom',Q='';
+const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});
+const dayDiff=(a,b)=>Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/864e5);
+const fmtBR=d=>{const[y,m,dd]=d.split('-');return dd+'/'+m};
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sign=n=>n>0?'+'+n:''+n, cls=n=>n>0?'pos':n<0?'neg':'zer';
+const label={up:'escalando',down:'caindo',flat:'estável',dead:'parou'};
+
+async function carregar(){
+  const r=await fetch('../data/historico.json?t='+Date.now());
+  DB=await r.json();
+  const s=DB.atualizadoEm?new Date(DB.atualizadoEm).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'nunca';
+  document.getElementById('stamp').textContent='última coleta automática · '+s;
+  render();
+}
+const hist=t=>[...(t.leituras||[])].sort((a,b)=>a.date<b.date?-1:1);
+function atBefore(t,d){let v=null;for(const s of hist(t)){if(s.date<=d)v=s;else break}return v}
+function metrics(t){
+  const h=hist(t),L=h[h.length-1];
+  if(!L)return{count:null,st:'flat',stale:999};
+  const prev=h[h.length-2]||null;
+  const d1=prev?L.count-prev.count:null, gap=prev?dayDiff(L.date,prev.date):null;
+  const back=n=>{const d=new Date(L.date+'T00:00:00');d.setDate(d.getDate()-n);return atBefore(t,d.toISOString().slice(0,10))};
+  const r7=back(7),r30=back(30);
+  const d7=r7?L.count-r7.count:null, d30=r30?L.count-r30.count:null;
+  const p7=(r7&&r7.count>0)?d7/r7.count*100:null;
+  let st='flat';
+  if(L.count===0)st='dead';
+  else if(p7!==null)st=p7>=15?'up':p7<=-15?'down':'flat';
+  else if(d1!==null)st=d1>0?'up':d1<0?'down':'flat';
+  return{count:L.count,date:L.date,d1,gap,d7,d30,p7,st,stale:dayDiff(today(),L.date)};
+}
+function strata(t,w=170,h=44){
+  const H=hist(t).slice(-30);
+  if(H.length<2)return`<svg class="strata" viewBox="0 0 ${w} ${h}"><text x="0" y="26" fill="#65717D" font-size="10" font-family="IBM Plex Mono">aguardando 2ª coleta</text></svg>`;
+  const max=Math.max(...H.map(s=>s.count),1),n=H.length;
+  const bw=Math.max(2,Math.min(9,(w-(n-1)*2)/n)),gap=(w-n*bw)/Math.max(1,n-1);
+  let b='';
+  H.forEach((s,i)=>{
+    const bh=Math.max(2,(s.count/max)*(h-6)),x=i*(bw+gap),y=h-bh,p=H[i-1];
+    const c=!p?'#4A5561':s.count>p.count?'var(--up)':s.count<p.count?'var(--down)':'#4A5561';
+    b+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="1.5" fill="${c}" opacity="${(i===n-1?1:.6+i/n*.3).toFixed(2)}"><title>${fmtBR(s.date)}: ${s.count}</title></rect>`;
+  });
+  return`<svg class="strata" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${b}</svg>`;
+}
+function bigChart(t){
+  const H=hist(t),W=780,Hh=200,P=28;
+  if(H.length<2)return'<div class="hint">O gráfico aparece a partir da segunda coleta.</div>';
+  const max=Math.max(...H.map(s=>s.count),1);
+  const x=i=>P+i*((W-P*2)/(H.length-1)), y=v=>Hh-P-(v/max)*(Hh-P*2);
+  const pts=H.map((s,i)=>`${x(i).toFixed(1)},${y(s.count).toFixed(1)}`).join(' ');
+  const ticks=[0,.5,1].map(f=>{const v=Math.round(max*f),yy=y(v);
+    return`<line x1="${P}" x2="${W-P}" y1="${yy}" y2="${yy}" stroke="#222C36"/><text x="4" y="${yy+3}" fill="#65717D" font-size="9" font-family="IBM Plex Mono">${v}</text>`}).join('');
+  const dots=H.map((s,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(s.count).toFixed(1)}" r="3" fill="var(--ore)"><title>${fmtBR(s.date)}: ${s.count}</title></circle>`).join('');
+  return`<svg viewBox="0 0 ${W} ${Hh}" style="width:100%">
+    <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--ore)" stop-opacity=".28"/><stop offset="1" stop-color="var(--ore)" stop-opacity="0"/></linearGradient></defs>
+    ${ticks}<polygon points="${P},${Hh-P} ${pts} ${x(H.length-1).toFixed(1)},${Hh-P}" fill="url(#g)"/>
+    <polyline points="${pts}" fill="none" stroke="var(--ore)" stroke-width="2"/>${dots}</svg>`;
+}
+function render(){
+  const all=Object.entries(DB.anunciantes||{}).map(([id,t])=>({id,t,m:metrics(t)}));
+  const total=all.reduce((s,r)=>s+(r.m.count||0),0);
+  const mov=all.filter(r=>r.m.d7!==null).sort((a,b)=>b.m.d7-a.m.d7);
+  const top=mov[0],bot=mov[mov.length-1];
+  document.getElementById('summary').innerHTML=`
+    <div class="sm"><div class="k">Anunciantes</div><div class="v">${all.length}</div><div class="s">${all.filter(r=>r.m.st==='up').length} escalando agora</div></div>
+    <div class="sm"><div class="k">Anúncios rastreados</div><div class="v">${total.toLocaleString('pt-BR')}</div><div class="s">soma da última coleta</div></div>
+    <div class="sm"><div class="k">Maior alta (7d)</div><div class="v ${top&&top.m.d7>0?'pos':''}">${top&&top.m.d7>0?sign(top.m.d7):'—'}</div><div class="s">${top&&top.m.d7>0?esc(top.t.name):'nada subindo'}</div></div>
+    <div class="sm"><div class="k">Maior queda (7d)</div><div class="v ${bot&&bot.m.d7<0?'neg':''}">${bot&&bot.m.d7<0?sign(bot.m.d7):'—'}</div><div class="s">${bot&&bot.m.d7<0?esc(bot.t.name):'nada caindo'}</div></div>`;
+  const c={all:all.length,up:0,down:0,flat:0,dead:0};all.forEach(r=>c[r.m.st]++);
+  document.getElementById('chips').innerHTML=[['all','Todos'],['up','Escalando'],['down','Caindo'],['flat','Estáveis'],['dead','Parados']]
+    .map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${FILTER===k}">${l}<i>${c[k]||0}</i></button>`).join('');
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;render()});
+
+  let list=all.filter(r=>FILTER==='all'||r.m.st===FILTER);
+  if(Q){const q=Q.toLowerCase();list=list.filter(r=>(r.t.name+' '+(r.t.tag||'')).toLowerCase().includes(q))}
+  list.sort({mom:(a,b)=>(b.m.p7??-1e9)-(a.m.p7??-1e9),d1:(a,b)=>(b.m.d1??-1e9)-(a.m.d1??-1e9),
+    count:(a,b)=>(b.m.count??-1)-(a.m.count??-1),name:(a,b)=>a.t.name.localeCompare(b.t.name)}[SORT]);
+
+  const rows=document.getElementById('rows');
+  if(!all.length){rows.innerHTML=`<div class="empty"><h3>Nenhuma coleta ainda</h3><p>Adicione os links em <code>data/anunciantes.json</code> e rode o robô. Os números aparecem aqui sozinhos.</p></div>`;return}
+  rows.innerHTML=list.map(({id,t,m})=>{
+    const st=m.st,stale=m.stale===0?'hoje':m.stale===1?'ontem':`há ${m.stale} dias`;
+    return`<div class="row ${st}" data-id="${id}">
+      <div class="idc"><div class="nm">${esc(t.name)}</div>
+        <div class="meta"><span class="pill st-${st}">${label[st]}</span>${t.tag?`<span class="pill">${esc(t.tag)}</span>`:''}<span>lido ${stale}</span></div></div>
+      <div class="cnt"><div class="count">${m.count??'—'}<small>ANÚNCIOS ATIVOS</small></div></div>
+      <div class="d1"><div class="delta ${cls(m.d1||0)}"><small>${m.gap?'Δ '+m.gap+'d':'Δ dia'}</small>${m.d1===null?'—':sign(m.d1)}</div></div>
+      <div class="d7"><div class="delta ${cls(m.d7||0)}"><small>Δ 7 dias</small>${m.d7===null?'—':sign(m.d7)}<div class="pct">${m.p7!==null?(m.p7>0?'+':'')+m.p7.toFixed(0)+'%':'—'}</div></div></div>
+      <div class="stw">${strata(t)}</div>
+      <button class="go" data-url="${esc(t.url)}" title="Abrir na biblioteca">↗</button>
+    </div>`}).join('');
+  rows.querySelectorAll('.row').forEach(r=>r.onclick=e=>{if(!e.target.closest('.go'))detail(r.dataset.id)});
+  rows.querySelectorAll('.go').forEach(b=>b.onclick=e=>{e.stopPropagation();window.open(b.dataset.url,'_blank')});
+  document.getElementById('foot').textContent=`O robô coleta todo dia às 07:00 (Brasília). Números lidos direto da tela da biblioteca.`;
+}
+function detail(id){
+  const t=DB.anunciantes[id],m=metrics(t),H=hist(t);
+  document.getElementById('dName').textContent=t.name;
+  document.getElementById('dSub').textContent=`${t.tag||'sem nicho'} · ${H.length} coletas`;
+  document.getElementById('dBody').innerHTML=`
+    <div class="kpi">
+      <div><div class="k">Ativos</div><div class="v">${m.count??'—'}</div></div>
+      <div><div class="k">Δ dia</div><div class="v ${cls(m.d1||0)}">${m.d1===null?'—':sign(m.d1)}</div></div>
+      <div><div class="k">Δ 7 dias</div><div class="v ${cls(m.d7||0)}">${m.d7===null?'—':sign(m.d7)}</div></div>
+      <div><div class="k">Δ 30 dias</div><div class="v ${cls(m.d30||0)}">${m.d30===null?'—':sign(m.d30)}</div></div>
+    </div>
+    ${bigChart(t)}
+    ${t.notes?`<div class="hint" style="margin-top:14px;border:1px solid var(--line);border-radius:8px;padding:12px">${esc(t.notes)}</div>`:''}
+    <div style="margin-top:16px"><a class="btn" href="${esc(t.url)}" target="_blank" style="text-decoration:none;display:inline-block">Abrir biblioteca ↗</a></div>
+    <table class="hist"><thead><tr><th>Data</th><th>Anúncios</th><th>Variação</th><th>Origem</th></tr></thead><tbody>
+      ${H.slice().reverse().map((s,i,a)=>{const p=a[i+1],d=p?s.count-p.count:null;
+        return`<tr><td>${fmtBR(s.date)}</td><td>${s.count}</td><td class="${cls(d||0)}">${d===null?'—':sign(d)}</td><td style="color:var(--ink-3)">${s.source==='auto'?'robô':'manual'}</td></tr>`}).join('')}
+    </tbody></table>`;
+  document.getElementById('vDetail').classList.add('on');
+}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.veil').classList.remove('on'));
+document.querySelectorAll('.veil').forEach(v=>v.onclick=e=>{if(e.target===v)v.classList.remove('on')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.veil.on').forEach(v=>v.classList.remove('on'))});
+document.getElementById('search').oninput=e=>{Q=e.target.value;render()};
+document.getElementById('sort').onchange=e=>{SORT=e.target.value;render()};
+document.getElementById('bReload').onclick=carregar;
+
+document.getElementById('bAdd').onclick=()=>{document.getElementById('vAdd').classList.add('on');bloco()};
+function bloco(){
+  const url=document.getElementById('aUrl').value.trim(),name=document.getElementById('aName').value.trim(),tag=document.getElementById('aTag').value.trim();
+  const id=(name||'novo').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').slice(0,28)+'-'+Math.random().toString(36).slice(2,6);
+  document.getElementById('aOut').value=JSON.stringify({id,name,tag,notes:'',url},null,2);
+}
+['aUrl','aName','aTag'].forEach(i=>document.getElementById(i).oninput=bloco);
+document.getElementById('aCopy').onclick=()=>{navigator.clipboard.writeText(document.getElementById('aOut').value);};
+carregar();
+</script>
+</body>
+</html>

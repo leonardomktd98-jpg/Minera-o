@@ -1,0 +1,12 @@
+{
+  "name": "filao",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "coletar": "node scraper/coletar.js"
+  },
+  "dependencies": {
+    "playwright": "^1.45.0"
+  }
+}
